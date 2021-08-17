@@ -47,6 +47,16 @@ public:
         return liftLeft->get_position();
     }
 
+    // Returns the current voltage of the lefthand side of the lift
+    double get_voltage() {
+        return liftLeft->get_voltage();
+    }
+
+    // Returns the average torque of both sides of the lift
+    double get_torque() {
+        return ((liftLeft->get_torque() + liftRight->get_torque())/2);
+    }
+
     // Returns pressed state of the lift hard stop (1=pressed 0=not pressed)
     int get_button() {
         return liftLimitButton->get_value();
@@ -62,13 +72,15 @@ public:
 
         switch (liftPresetPosition) {
             case 0://Pickup position
-                liftLeft->move_absolute(pickup, 200);
+                liftLeft->move_absolute(pickup+10, 200);
                 break;
             case 1://Lift raised, holding tree
                 liftLeft->move_absolute(raised, 200);
                 break;
             case 2://Folded into robot
-                liftLeft->move_absolute(folded, 200);
+                if((liftLeft->get_torque() + liftRight->get_torque())/2 < 0.15) {
+                    liftLeft->move_absolute(folded, 200);
+                }
                 break;
         }
     }
@@ -84,7 +96,7 @@ public:
                 zeroSequenceState = 1;
                 break;
             case 1:// Raise lift
-                liftLeft->move_velocity(-200);
+                liftLeft->move_velocity(-75);
                 if(liftLimitButton->get_value()) {
                     liftLeft->move_velocity(0);
                     liftLeft->set_zero_position(0);

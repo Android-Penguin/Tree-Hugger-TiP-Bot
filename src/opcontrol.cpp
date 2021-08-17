@@ -38,11 +38,11 @@ void opcontrol() {
 
 
         // LCD###################################################################
-        pros::lcd::set_text(0, "---------Tree Hugger---------");
+        pros::lcd::set_text(0, "----------Tree Hugger----------");
         pros::lcd::print(1, "Drive Init=%d  Lift Init=%d", driveInitialise, liftInitialise);
         pros::lcd::print(2, "Drive direction: %s", drive.get_direction());
         pros::lcd::print(3, "Lift Pos = %f", lift.get_position());
-        pros::lcd::print(4, "Button State= %d", lift.get_button());
+        pros::lcd::print(4, "Lift Torque = %f", lift.get_torque());
 
 
 		// Drive#################################################################
