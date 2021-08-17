@@ -21,6 +21,7 @@ public:
     	driveBackLeft = new pros::Motor(3);
     	driveBackRight = new pros::Motor(4, true);
     }
+
     // Moves the drive at a set velocity
     void move_velocity(float driveSpeed, float rotateSpeed) {
         driveFrontLeft->move_velocity(driveSpeed*driveDirection + rotateSpeed);
@@ -28,6 +29,7 @@ public:
 		driveBackLeft->move_velocity(driveSpeed*driveDirection + rotateSpeed);
 		driveBackRight->move_velocity(driveSpeed*driveDirection - rotateSpeed);
     }
+
     // Moves the drive at set voltage
     void move_voltage(float driveSpeed, float rotateSpeed) {
         driveFrontLeft->move_voltage(driveSpeed*driveDirection + rotateSpeed);
@@ -35,10 +37,13 @@ public:
 		driveBackLeft->move_voltage(driveSpeed*driveDirection + rotateSpeed);
 		driveBackRight->move_voltage(driveSpeed*driveDirection - rotateSpeed);
     }
+
     // Changes direction of drive
     void set_direction(int direction) {
         driveDirection = direction;
     }
+
+    // Returns direction of drive
     std::string get_direction() {
         if(driveDirection == Donuts) {
             return "Donuts";
@@ -48,10 +53,6 @@ public:
             return "Direction Error";
         }
     }
-
-
-
-
 
     // Reset drive
     void reset_drive() {

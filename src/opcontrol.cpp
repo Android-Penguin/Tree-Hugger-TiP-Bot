@@ -20,6 +20,10 @@ void opcontrol() {
     bool driveInitialise = false;
     bool liftInitialise = false;// Set to false when zeroing button added
 
+    // Cooldown variables
+    bool liftRaiseCooldown = false;
+    bool liftLowerCooldown = false;
+
 	while (true) {
         // Initialise############################################################
         if(!driveInitialise) {
@@ -33,9 +37,10 @@ void opcontrol() {
 
 
         // LCD###################################################################
-        pros::lcd::set_text(0, "Tree Hugger");
-        pros::lcd::print(1, "Drive Init= %d  Lift Init=%d", driveInitialise, liftInitialise);
-        pros::lcd::print(2, "Lift Pos = %f", lift.get_position());
+        pros::lcd::set_text(0, "---------Tree Hugger---------");
+        pros::lcd::print(1, "Drive Init=%d  Lift Init=%d", driveInitialise, liftInitialise);
+        pros::lcd::print(2, "Drive direction: %s", drive.get_direction());
+        pros::lcd::print(3, "Lift Pos = %f", lift.get_position());
         pros::lcd::print(4, "Button State= %d", lift.get_button());
 
 
@@ -64,11 +69,21 @@ void opcontrol() {
         if(liftInitialise) {
             lift.move_velocity(master.get_analog(ANALOG_LEFT_Y));
 
-            if(master.get_digital(DIGITAL_R1)) {
-                // Raise tree off ground
+            // Raise Lift
+            if(master.get_digital(DIGITAL_R1) && !liftRaiseCooldown) {
+                liftRaiseCooldown = true;
+                // lift.shift_position(UP);
             }
-            if(master.get_digital(DIGITAL_R2)) {
-                // Lower lift to pick up trees
+            if(!master.get_digital(DIGITAL_R1)) {
+                liftRaiseCooldown = false;
+            }
+            // Lower lift
+            if(master.get_digital(DIGITAL_R2) && !liftLowerCooldown) {
+                liftLowerCooldown = true;
+                // lift.shift_position(DOWN);
+            }
+            if(!master.get_digital(DIGITAL_R2)) {
+                liftLowerCooldown = false;
             }
 
             lift.update();

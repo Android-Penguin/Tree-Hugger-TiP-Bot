@@ -19,10 +19,12 @@ public:
         liftLeft->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     	liftRight->set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
     }
+
     // Raises/lowers the lift to a target position based on the degrees turned on the pinion gear
     void move_to(double targetPosition, int speed) {
         liftLeft->move_absolute(targetPosition, speed);
     }
+
     // Raises/lowers the lift at a set speed
     void move_velocity(int speed) {
         if(speed < 0 && !liftLimitButton->get_value()) {// Raising lift
@@ -33,13 +35,18 @@ public:
             liftLeft->move_velocity(0);
         }
     }
+
     // Returns the current position of the lift in degrees turned on the pinion gear
     double get_position() {
         return liftLeft->get_position();
     }
+
+    // Returns pressed state of the lift hard stop (1=pressed 0=not pressed)
     int get_button() {
         return liftLimitButton->get_value();
     }
+
+    // Lift reset sequence; raises lift to limit switch then returns lift to pickup position
     bool zeroLift() {
         static int zeroSequenceState;
         static int functionEntryTime;
@@ -73,11 +80,13 @@ public:
         liftRight->move_voltage(liftLeft->get_voltage());
         return false;
     }
+
     // Resets the value of the motor encoder to zero at the current position
     void reset_encoder() {
         liftLeft->set_zero_position(0);
         liftRight->set_zero_position(0);
     }
+    
     // Called once per cycle of the main loop to update background processes
     void update() {
         /*Sets voltage of the right motor to match the voltage of the left motor

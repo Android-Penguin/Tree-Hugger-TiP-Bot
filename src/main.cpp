@@ -23,7 +23,7 @@ int pickup = 1700;
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(0, "Tree Hugger");
+	pros::lcd::set_text(0, "---------Tree Hugger---------");
 }
 
 /**
