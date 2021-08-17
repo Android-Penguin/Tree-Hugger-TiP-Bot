@@ -11,6 +11,9 @@ class Lift {
     pros::ADIButton* liftLimitButton;
 
 public:
+    // Class variables
+    int liftPresetPosition = 0;
+
     Lift() {
         liftLeft = new pros::Motor(11, true);
         liftRight = new pros::Motor(12);
@@ -26,11 +29,14 @@ public:
     }
 
     // Raises/lowers the lift at a set speed
-    void move_velocity(int speed) {
+    void move_velocity(int speed, bool override=false) {
+        liftPresetPosition = 0;//Reset preset position
         if(speed < 0 && !liftLimitButton->get_value()) {// Raising lift
             liftLeft->move_velocity(speed);
         } else if(speed > 0 && liftLeft->get_position() < pickup) {// Lowering lift
             liftLeft->move_velocity(speed);
+        } else if(speed > 0 && override) {
+            liftLeft->move_velocity(speed/4);
         } else {
             liftLeft->move_velocity(0);
         }
@@ -44,6 +50,27 @@ public:
     // Returns pressed state of the lift hard stop (1=pressed 0=not pressed)
     int get_button() {
         return liftLimitButton->get_value();
+    }
+
+    // Moves the lift between preset positions
+    void shift_position(int direction) {
+        if(direction == UP && liftPresetPosition < 2) {
+            liftPresetPosition ++;
+        } else if(direction == DOWN && liftPresetPosition > 0) {
+            liftPresetPosition --;
+        }
+
+        switch (liftPresetPosition) {
+            case 0://Pickup position
+                liftLeft->move_absolute(pickup, 200);
+                break;
+            case 1://Lift raised, holding tree
+                liftLeft->move_absolute(raised, 200);
+                break;
+            case 2://Folded into robot
+                liftLeft->move_absolute(folded, 200);
+                break;
+        }
     }
 
     // Lift reset sequence; raises lift to limit switch then returns lift to pickup position
@@ -86,7 +113,7 @@ public:
         liftLeft->set_zero_position(0);
         liftRight->set_zero_position(0);
     }
-    
+
     // Called once per cycle of the main loop to update background processes
     void update() {
         /*Sets voltage of the right motor to match the voltage of the left motor

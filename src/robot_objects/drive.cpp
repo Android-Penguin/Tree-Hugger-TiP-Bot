@@ -1,15 +1,11 @@
 #include "main.h"
+#include "./../global_variables.h"
 
 class Drive {
     pros::Motor* driveFrontLeft;
 	pros::Motor* driveFrontRight;
 	pros::Motor* driveBackLeft;
 	pros::Motor* driveBackRight;
-
-    enum Direction {
-        Donuts = 1,
-        Trees = -1
-    };
 
 public:
     // Class variables

@@ -23,6 +23,7 @@ void opcontrol() {
     // Cooldown variables
     bool liftRaiseCooldown = false;
     bool liftLowerCooldown = false;
+    bool joystickControl = false;
 
 	while (true) {
         // Initialise############################################################
@@ -67,12 +68,22 @@ void opcontrol() {
 
 		// Lift###################################################################
         if(liftInitialise) {
-            lift.move_velocity(master.get_analog(ANALOG_LEFT_Y));
+            if(master.get_digital(DIGITAL_L1)) {
+                lift.move_velocity(master.get_analog(ANALOG_LEFT_Y));
+                joystickControl = true;
+            } else if(master.get_digital(DIGITAL_L2)) {
+                lift.move_velocity(master.get_analog(ANALOG_LEFT_Y), true);
+                joystickControl = true;
+            } else if(joystickControl) {
+                lift.move_velocity(0);
+                joystickControl = false;
+            }
+
 
             // Raise Lift
             if(master.get_digital(DIGITAL_R1) && !liftRaiseCooldown) {
                 liftRaiseCooldown = true;
-                // lift.shift_position(UP);
+                lift.shift_position(UP);
             }
             if(!master.get_digital(DIGITAL_R1)) {
                 liftRaiseCooldown = false;
@@ -80,7 +91,7 @@ void opcontrol() {
             // Lower lift
             if(master.get_digital(DIGITAL_R2) && !liftLowerCooldown) {
                 liftLowerCooldown = true;
-                // lift.shift_position(DOWN);
+                lift.shift_position(DOWN);
             }
             if(!master.get_digital(DIGITAL_R2)) {
                 liftLowerCooldown = false;
