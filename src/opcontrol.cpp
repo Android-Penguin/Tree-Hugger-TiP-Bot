@@ -4,10 +4,20 @@
 #include "functions.h"
 #include "pros/llemu.hpp"
 
+int displayPage = 1;
+void left_button() {if(displayPage>1){displayPage--;}else{displayPage=3;}}
+void center_button() {displayPage=1;}
+void right_button() {if(displayPage<3){displayPage++;}else {displayPage=1;}}
+
 void opcontrol() {
     // Initialising opcontrol
     stateEntryTime = pros::millis();
+
+    // LCD setup
     manualLCDClear();
+    pros::lcd::register_btn0_cb(left_button);
+	pros::lcd::register_btn1_cb(center_button);
+	pros::lcd::register_btn2_cb(right_button);
 
 	// Controller
 	pros::Controller master(pros::E_CONTROLLER_MASTER);
@@ -15,10 +25,6 @@ void opcontrol() {
     // Drive variables
     float driveSpeed;
     float rotateSpeed;
-
-    // Initialise variables
-    bool driveInitialise = false;
-    bool liftInitialise = false;// Set to false when zeroing button added
 
     // Cooldown variables
     bool liftRaiseCooldown = false;
@@ -38,11 +44,51 @@ void opcontrol() {
 
 
         // LCD###################################################################
-        pros::lcd::set_text(0, "----------Tree Hugger----------");
-        pros::lcd::print(1, "Drive Init=%d  Lift Init=%d", driveInitialise, liftInitialise);
-        pros::lcd::print(2, "Drive direction: %s", drive.get_direction());
-        pros::lcd::print(3, "Lift Pos = %f", lift.get_position());
-        pros::lcd::print(4, "Lift Torque = %f", lift.get_torque());
+        switch (displayPage) {
+            case 1://Default Page
+                pros::lcd::set_text(0, "Tree Hugger----Home-------Page 1");
+                pros::lcd::print(1, "Drive Init=%d  Lift Init=%d", driveInitialise, liftInitialise);
+                pros::lcd::print(2, "Drive direction: %s", drive.get_direction());
+                pros::lcd::print(3, "Drive Pos=%06.0f", drive.get_position());
+                pros::lcd::print(4, "Lift Pos = %04.0f", lift.get_position());
+                pros::lcd::print(5, "");
+    	        pros::lcd::print(6, "");
+                pros::lcd::print(7, "Previous      Home          Next");
+                break;
+            case 2://Drive debug page
+                pros::lcd::set_text(0, "Tree Hugger----Drive------Page 2");
+                pros::lcd::print(1, "Drive direction: %s", drive.get_direction());
+              	pros::lcd::print(2, "FL=%06.0f, FR=%06.0f", drive.wheel_position(FrontLeft), drive.wheel_position(FrontRight));
+                pros::lcd::print(3, "BL=%06.0f, BR=%06.0f", drive.wheel_position(BackLeft), drive.wheel_position(BackRight));
+              	pros::lcd::print(4, "Drive Pos=%06.0f", drive.get_position());
+    	        pros::lcd::print(5, "");
+    	        pros::lcd::print(6, "");
+    	        pros::lcd::print(7, "Previous      Home          Next");
+                break;
+            case 3://Lift debug page
+                pros::lcd::set_text(0, "Tree Hugger----Lift-------Page 3");
+                pros::lcd::print(1, "Lift Pos = %04.0f", lift.get_position());
+              	pros::lcd::print(2, "Lift Torque = %.04f", lift.get_torque());
+                pros::lcd::print(3, "");
+              	pros::lcd::print(4, "");
+    	        pros::lcd::print(5, "");
+    	        pros::lcd::print(6, "");
+    	        pros::lcd::print(7, "Previous      Home          Next");
+                break;
+            case 4://template page
+                pros::lcd::set_text(0, "Tree Hugger---------------Page 4");
+                pros::lcd::print(1, "");
+              	pros::lcd::print(2, "");
+                pros::lcd::print(3, "");
+              	pros::lcd::print(4, "");
+    	        pros::lcd::print(5, "");
+    	        pros::lcd::print(6, "");
+    	        pros::lcd::print(7, "Previous      Home          Next");
+                break;
+            default:
+                displayPage = 1;
+                break;
+        }
 
 
 		// Drive#################################################################
@@ -98,6 +144,8 @@ void opcontrol() {
             }
 
             lift.update();
+        } else if(lift.zeroLift()) {
+            liftInitialise = true;
         }
 
 		pros::delay(20);

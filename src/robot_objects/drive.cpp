@@ -1,5 +1,6 @@
 #include "main.h"
 #include "./../global_variables.h"
+#include "pros/rtos.hpp"
 
 class Drive {
     pros::Motor* driveFrontLeft;
@@ -48,6 +49,85 @@ public:
         } else {
             return "Direction Error";
         }
+    }
+
+    // Returns position of selected wheel
+    double wheel_position(int target_wheel) {
+        switch (target_wheel) {
+            case FrontLeft:
+                return driveFrontLeft->get_position();
+                break;
+            case FrontRight:
+                return driveFrontRight->get_position();
+                break;
+            case BackLeft:
+                return driveBackLeft->get_position();
+                break;
+            case BackRight:
+                return driveBackRight->get_position();
+                break;
+            default:
+                return 0;
+                break;
+        }
+    }
+
+    // Returns the encoder value of the wheel that has travelled the least distance
+    double get_position() {
+        // Creates array with wheel positions
+        double wheel_positions [4] = {
+            static_cast<double>(std::abs(driveFrontLeft->get_position())),
+            static_cast<double>(std::abs(driveFrontRight->get_position())),
+            static_cast<double>(std::abs(driveBackLeft->get_position())),
+            static_cast<double>(std::abs(driveBackRight->get_position()))
+        };
+        // Min value initial
+        double min_value = wheel_positions[0];
+        for(int i=0; i<4; i++) {
+            if(wheel_positions[i] < min_value) {
+                min_value = wheel_positions[i];
+            }
+        }
+        return min_value;
+    }
+
+    // Moves the drive a set distance in encoder units with motion profile
+    bool move_for(int targetDistance) {
+        // Sequence variables
+        static int moveSequenceState;
+        static int stateEntryTime;
+        // Ramp constants
+        static const double rampUpDistance = 500;
+        static const double rampDownDistance = 500;
+        // Calculated values
+        double accelerateDistance;
+        double constantVelocityDistance;
+        double decelerateDistance;
+
+        switch (moveSequenceState) {
+            case 0:// Set function entry time and calculate distances
+                reset_drive();
+                stateEntryTime = pros::millis();
+                // Distance greater than or equal to ramp times
+                if(targetDistance >= rampUpDistance+rampDownDistance) {
+                    accelerateDistance = rampUpDistance;
+                    constantVelocityDistance = targetDistance-(rampUpDistance+rampDownDistance);
+                    decelerateDistance = rampDownDistance;
+                }
+                // Distance less than ramp times
+                else {
+                    accelerateDistance = targetDistance/2.0;
+                    constantVelocityDistance = 0;
+                    decelerateDistance = targetDistance/2.0;
+                }
+                moveSequenceState = 1;
+                break;
+            case 1://Ramp up
+                break;
+
+        }
+
+        return false;
     }
 
     // Reset drive

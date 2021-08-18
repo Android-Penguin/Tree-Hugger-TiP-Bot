@@ -6,6 +6,10 @@ extern int autonSelection;
 // remembers what time a state was entered, allowing the robot to leave the state afer a set amount of time
 extern int stateEntryTime;
 
+// Initialise flags, can be triggered from either auton or driver control
+extern bool driveInitialise;
+extern bool liftInitialise;
+
 // Lift positions
 extern int folded;
 extern int raised;
@@ -21,4 +25,12 @@ enum shiftDirection {
 enum Direction {
     Donuts = 1,
     Trees = -1
+};
+
+// Wheel selection
+enum Wheels {
+    FrontLeft = 1,
+    FrontRight = 2,
+    BackLeft = 3,
+    BackRight = 4
 };

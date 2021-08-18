@@ -12,6 +12,17 @@ void autonomous() {
     int previousState;
 
     while (true) {
+        // Initialise############################################################
+        if(!driveInitialise) {
+            drive.reset_drive();
+            drive.set_direction(Trees);// Set starting drive direction
+            driveInitialise = true;
+        }
+        if(!liftInitialise && lift.zeroLift()) {
+            liftInitialise = true;
+        }
+
+        // Auton Routine#########################################################
         switch (autonSequenceState) {
             case 0:
                 // Yup do something

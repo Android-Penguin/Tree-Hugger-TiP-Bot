@@ -4,9 +4,13 @@
 #include "functions.h"
 #include "pros/llemu.hpp"
 
-// Globals
+// Globals#######################################################################
 int autonSelection;
 int stateEntryTime;
+
+// Initialise variables
+bool driveInitialise = false;
+bool liftInitialise = false;// Set to false when zeroing button added
 
 Drive drive;
 Lift lift;
