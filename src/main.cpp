@@ -27,7 +27,7 @@ int pickup = 1700;
  */
 void initialize() {
 	pros::lcd::initialize();
-	pros::lcd::set_text(0, "----------Tree Hugger----------");
+	pros::lcd::set_text(0, "Tree Hugger-----------Initialise");
 }
 
 /**
@@ -36,7 +36,7 @@ void initialize() {
  * the robot is enabled, this task will exit.
  */
 void disabled() {
-	pros::lcd::set_text(0, "Tree Hugger Disabled");
+	pros::lcd::set_text(0, "Tree Hugger-------------Disabled");
 }
 
 /**
@@ -48,4 +48,6 @@ void disabled() {
  * This task will exit when the robot is enabled and autonomous or opcontrol
  * starts.
  */
-void competition_initialize() {}
+void competition_initialize() {
+	pros::lcd::set_text(0, "Tree Hugger------Comp Initialise");
+}

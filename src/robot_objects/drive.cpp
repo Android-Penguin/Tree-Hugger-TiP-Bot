@@ -1,5 +1,6 @@
 #include "main.h"
 #include "./../global_variables.h"
+#include "pros/llemu.hpp"
 #include "pros/rtos.hpp"
 
 class Drive {
@@ -20,7 +21,7 @@ public:
     }
 
     // Moves the drive at a set velocity
-    void move_velocity(float driveSpeed, float rotateSpeed) {
+    void move_velocity(double driveSpeed, double rotateSpeed) {
         driveFrontLeft->move_velocity(driveSpeed*driveDirection + rotateSpeed);
 		driveFrontRight->move_velocity(driveSpeed*driveDirection - rotateSpeed);
 		driveBackLeft->move_velocity(driveSpeed*driveDirection + rotateSpeed);
@@ -28,14 +29,14 @@ public:
     }
 
     // Moves the drive at set voltage
-    void move_voltage(float driveSpeed, float rotateSpeed) {
+    void move_voltage(double driveSpeed, double rotateSpeed) {
         driveFrontLeft->move_voltage(driveSpeed*driveDirection + rotateSpeed);
 		driveFrontRight->move_voltage(driveSpeed*driveDirection - rotateSpeed);
 		driveBackLeft->move_voltage(driveSpeed*driveDirection + rotateSpeed);
 		driveBackRight->move_voltage(driveSpeed*driveDirection - rotateSpeed);
     }
 
-    // Changes direction of drive
+    // Changes direction of drive between intaking trees and intaking donuts
     void set_direction(int direction) {
         driveDirection = direction;
     }
@@ -92,45 +93,70 @@ public:
     }
 
     // Moves the drive a set distance in encoder units with motion profile
-    bool move_for(int targetDistance) {
+    bool move_for(double targetDistance, int direction=Trees) {
         // Sequence variables
         static int moveSequenceState;
         static int stateEntryTime;
         // Ramp constants
-        static const double rampUpDistance = 500;
-        static const double rampDownDistance = 500;
+        static const double rampUpDistance = 10000;// Unit: encoder counts
+        static const double rampUpTime = 5000;// Unit: milliseconds
+        static const double rampDownDistance = 10000;// Unit: encoder counts
+        static const double rampDownTime = 500;// Unit: milliseconds
         // Calculated values
-        double accelerateDistance;
-        double constantVelocityDistance;
-        double decelerateDistance;
+        static double accelerateDistance;
+        static double constantVelocityDistance;
+        static double decelerateDistance;
+        static double speed;
 
         switch (moveSequenceState) {
-            case 0:// Set function entry time and calculate distances
+            case 0:// Calculate distances
                 reset_drive();
-                stateEntryTime = pros::millis();
+                set_direction(direction);
                 // Distance greater than or equal to ramp times
-                if(targetDistance >= rampUpDistance+rampDownDistance) {
+                if(targetDistance >= (rampUpDistance+rampDownDistance)) {
                     accelerateDistance = rampUpDistance;
                     constantVelocityDistance = targetDistance-(rampUpDistance+rampDownDistance);
                     decelerateDistance = rampDownDistance;
                 }
                 // Distance less than ramp times
-                else {
+                else if(targetDistance < (rampUpDistance+rampDownDistance)) {
                     accelerateDistance = targetDistance/2.0;
                     constantVelocityDistance = 0;
                     decelerateDistance = targetDistance/2.0;
                 }
-                moveSequenceState = 1;
+                if(accelerateDistance != 0) {
+                    stateEntryTime = pros::millis();
+                    moveSequenceState = 1;
+                }
                 break;
-            case 1://Ramp up
+            case 1:// Ramp up
+                pros::lcd::print(3, "Time:%d", (pros::millis()-stateEntryTime));
+                if(get_position() <= accelerateDistance) {
+                    speed = (200.0/rampUpTime)*(pros::millis()-stateEntryTime);
+                    move_velocity(speed, 0);
+                } else {
+                    moveSequenceState = 2;
+                }
                 break;
-
+            case 2:// Constant speed
+                if(get_position() <= (accelerateDistance+constantVelocityDistance)) {
+                    move_velocity(speed, 0);
+                } else {
+                    moveSequenceState = 3;
+                }
+                break;
+            case 3:
+                break;
         }
-
+        pros::lcd::print(2, "Move State = %d", moveSequenceState);
+        pros::lcd::print(4, "Speed = %f", speed);
+        pros::lcd::print(5, "Drive value = %f", get_position());
+        pros::lcd::print(6, "Accel=%.0f, Const=%.0f", accelerateDistance, constantVelocityDistance);
+        pros::lcd::print(7, "Decel=%.0f", decelerateDistance);
         return false;
     }
 
-    // Reset drive
+    // Resets drive encoders
     void reset_drive() {
         driveFrontLeft->set_zero_position(0);
         driveFrontRight->set_zero_position(0);

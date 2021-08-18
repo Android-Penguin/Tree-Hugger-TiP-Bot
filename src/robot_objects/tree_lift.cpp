@@ -115,7 +115,7 @@ public:
                 break;
         }
 
-        pros::lcd::print(7, "Sequence State= %d", zeroSequenceState);
+        // pros::lcd::print(6, "Zero Sequence State= %d", zeroSequenceState);
         liftRight->move_voltage(liftLeft->get_voltage());
         return false;
     }

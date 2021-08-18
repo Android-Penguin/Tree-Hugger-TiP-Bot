@@ -12,28 +12,49 @@ void autonomous() {
     int previousState;
 
     while (true) {
-        // Initialise############################################################
-        if(!driveInitialise) {
-            drive.reset_drive();
-            drive.set_direction(Trees);// Set starting drive direction
-            driveInitialise = true;
-        }
-        if(!liftInitialise && lift.zeroLift()) {
-            liftInitialise = true;
-        }
+        //LCD####################################################################
+        pros::lcd::set_text(0, "Tree Hugger----------------Auton");
+        pros::lcd::print(1, "Auton Sequence State = %d", autonSequenceState);
+        // pros::lcd::print(2, "");
+        // pros::lcd::print(3, "");
+        // pros::lcd::print(4, "");
+    	// pros::lcd::print(5, "");
+    	// pros::lcd::print(6, "");
+        pros::lcd::print(7, "");
 
         // Auton Routine#########################################################
         switch (autonSequenceState) {
             case 0:
-                // Yup do something
+                autonSequenceState = 1;
+                break;
+            case 1:// Initialise
+                if(!driveInitialise) {
+                    drive.reset_drive();
+                    drive.set_direction(Trees);// Set starting drive direction
+                    driveInitialise = true;
+                }
+                if(!liftInitialise && lift.zeroLift()) {
+                    liftInitialise = true;
+                }
+                if(liftInitialise && driveInitialise) {
+                    autonSequenceState = 2;
+                }
+                break;
+            case 2:// Drive?
+                if(drive.move_for(50000, Donuts)) {
+                    autonSequenceState = 3;
+                }
+                break;
+            case 3:
                 break;
         }
 
 
         if(autonSequenceState != previousState) {
             stateEntryTime = pros::millis();
-            autonSequenceState = previousState;
+            previousState = autonSequenceState;
         }
+        lift.update();
         pros::delay(20);
     }
 }
