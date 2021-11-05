@@ -103,7 +103,7 @@ public:
                     zeroSequenceState = 2;
                 }
                 break;
-            case 2:// Lower lift to target posistion
+            case 2:// Lower lift to target position
                 liftLeft->move_absolute(pickup, 200);
                 if(liftLeft->get_position() > pickup-5) {
                     zeroSequenceState = 3;

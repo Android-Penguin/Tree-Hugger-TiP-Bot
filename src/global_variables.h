@@ -23,8 +23,8 @@ enum shiftDirection {
 
 // Drive direction
 enum Direction {
-    Donuts = 1,
-    Trees = -1
+    Donuts = -1,
+    Trees = 1
 };
 
 // Wheel selection

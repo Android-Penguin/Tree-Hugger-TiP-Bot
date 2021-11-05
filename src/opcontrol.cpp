@@ -26,10 +26,14 @@ void opcontrol() {
     float driveSpeed;
     float rotateSpeed;
 
+    // Claw variables
+    bool clawClosed = false;
+
     // Cooldown variables
     bool liftRaiseCooldown = false;
     bool liftLowerCooldown = false;
     bool joystickControl = false;
+    bool clawCooldown = false;
 
 	while (true) {
         // Initialise############################################################
@@ -96,7 +100,7 @@ void opcontrol() {
             driveSpeed = master.get_analog(ANALOG_RIGHT_Y)/127.0;
             driveSpeed = driveSpeed*200;
             rotateSpeed = master.get_analog(ANALOG_RIGHT_X)/127.0;
-            rotateSpeed = rotateSpeed*150;
+            rotateSpeed = rotateSpeed*120;
 
             //uses the 2 speed values from the controller to move the robot at a proportional velocity
             drive.move_velocity(driveSpeed, rotateSpeed);
@@ -114,10 +118,7 @@ void opcontrol() {
 
 		// Lift###################################################################
         if(liftInitialise) {
-            if(master.get_digital(DIGITAL_L1)) {
-                lift.move_velocity(master.get_analog(ANALOG_LEFT_Y));
-                joystickControl = true;
-            } else if(master.get_digital(DIGITAL_L2)) {
+            if(master.get_digital(DIGITAL_L2)) {
                 lift.move_velocity(master.get_analog(ANALOG_LEFT_Y), true);
                 joystickControl = true;
             } else if(joystickControl) {
@@ -146,6 +147,28 @@ void opcontrol() {
             lift.update();
         } else if(lift.zeroLift()) {
             liftInitialise = true;
+        }
+
+        // Claw Grabber###########################################################
+        if(master.get_digital(DIGITAL_L1) && !clawCooldown) {
+            clawClosed = !clawClosed;
+            clawCooldown = true;
+        }
+        if(!master.get_digital(DIGITAL_L1)) {
+            clawCooldown = false;
+        }
+
+        if(clawClosed) {
+            claw.close_voltage(5000);
+        } else {
+            claw.open_claw();
+        }
+
+        // Claw Lift##############################################################
+        if(!master.get_digital(DIGITAL_L2)) {
+            claw.move_lift(master.get_analog(ANALOG_LEFT_Y)*0.6);
+        } else {
+            claw.move_lift(0);
         }
 
 		pros::delay(20);

@@ -14,6 +14,7 @@ bool liftInitialise = false;// Set to false when zeroing button added
 
 Drive drive;
 Lift lift;
+Claw claw;
 
 int folded = 0;
 int raised = 1111;
