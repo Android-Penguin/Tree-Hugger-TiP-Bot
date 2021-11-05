@@ -10,14 +10,15 @@ int stateEntryTime;
 
 // Initialise variables
 bool driveInitialise = false;
-bool liftInitialise = false;// Set to false when zeroing button added
+bool liftInitialise = false;
+bool clawInitialise = false;
 
 Drive drive;
 Lift lift;
 Claw claw;
 
 int folded = 0;
-int raised = 1111;
+int raised = 965;
 int pickup = 1700;
 
 /**

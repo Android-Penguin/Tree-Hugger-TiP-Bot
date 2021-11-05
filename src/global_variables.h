@@ -9,6 +9,7 @@ extern int stateEntryTime;
 // Initialise flags, can be triggered from either auton or driver control
 extern bool driveInitialise;
 extern bool liftInitialise;
+extern bool clawInitialise;
 
 // Lift positions
 extern int folded;

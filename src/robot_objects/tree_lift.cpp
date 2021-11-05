@@ -72,7 +72,11 @@ public:
 
         switch (liftPresetPosition) {
             case 0://Pickup position
-                liftLeft->move_absolute(pickup+10, 200);
+                if((liftLeft->get_torque() + liftRight->get_torque())/2 > 0.15) {
+                    liftLeft->move_absolute(pickup+10, 100);
+                } else {
+                    liftLeft->move_absolute(pickup+10, 200);
+                }
                 break;
             case 1://Lift raised, holding tree
                 liftLeft->move_absolute(raised, 200);
