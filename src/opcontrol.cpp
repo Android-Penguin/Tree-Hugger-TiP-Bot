@@ -27,12 +27,14 @@ void opcontrol() {
     // Drive variables
     float driveSpeed;
     float rotateSpeed;
+    float turnMultiplier = 0.5;
 
     // Claw variables
     bool clawClosed = false;
-    bool clawJoystick = true;//Flag to enable movement from joystick
+    bool clawJoystick = true;//Flag to enable grabber lift movement from joystick
     int grabState = 0;
     int clawResetState = 0;
+    int armTarget = 1680;// ############################################### Adjusts how far arm travels before releasing donut
     string grabAction = "releasing";
 
     // Cooldown variables
@@ -119,7 +121,7 @@ void opcontrol() {
             driveSpeed = master.get_analog(ANALOG_RIGHT_Y)/127.0;
             driveSpeed = driveSpeed*200;
             rotateSpeed = master.get_analog(ANALOG_RIGHT_X)/127.0;
-            rotateSpeed = rotateSpeed*120;
+            rotateSpeed = rotateSpeed*200*turnMultiplier;
 
             //uses the 2 speed values from the controller to move the robot at a proportional velocity
             drive.move_velocity(driveSpeed, rotateSpeed);
@@ -127,12 +129,14 @@ void opcontrol() {
             // Intaking donuts
             if(master.get_digital(DIGITAL_X)) {
                 drive.set_direction(Donuts);
+                turnMultiplier = 0.25;
                 clawJoystick = false;
                 claw.move_lift_to(0, 150);
             }
             // Intaking trees
             if(master.get_digital(DIGITAL_A)) {
                 drive.set_direction(Trees);
+                turnMultiplier = 0.5;
                 clawJoystick = false;
                 claw.move_lift_to(840, 200);
             }
@@ -172,9 +176,11 @@ void opcontrol() {
             liftInitialise = true;
         }
 
-
+        //! Grabber###############################################################
         if(clawInitialise) {
-            //* Claw Grabber######################################################
+            //****************
+            //* Claw Grabber *
+            //****************
             if(master.get_digital(DIGITAL_DOWN) && !clawCooldown) {
                 clawClosed = !clawClosed;
                 clawCooldown = true;
@@ -193,7 +199,9 @@ void opcontrol() {
                 claw.open_claw();
             }
 
-            //* Claw Lift#########################################################
+            //*************
+            //* Claw Lift *
+            //*************
             if(abs(master.get_analog(ANALOG_LEFT_Y)) > 0) {
                 grabState = 0;
                 clawResetState = 3;
@@ -207,7 +215,9 @@ void opcontrol() {
                 }
             }
 
-            //* Grab Sequence#####################################################
+            //*****************
+            //* Grab Sequence *
+            //*****************
             if(master.get_digital(DIGITAL_L1)) {
                 clawJoystick = false;
                 clawResetState = 0;
@@ -223,14 +233,24 @@ void opcontrol() {
                         }
                         break;
                     case 2:// Move lift
-                        claw.move_lift_to(1660, 200);
-                        if(claw.get_lift_position() > 1655) {
+                        // claw.move_lift_to(1680, 200);
+                        // if(claw.get_lift_position() > 1675) {
+                        //     stateEntryTime = pros::millis();
+                        //     grabState = 3;
+                        // }
+                        // claw.move_lift(4.88*sqrt(-claw.get_lift_position()+armTarget));
+                        if(claw.get_lift_position() < armTarget-500) {
+                            claw.move_lift(200);
+                        } else if(claw.get_lift_position() < armTarget-10) {
+                            claw.move_lift(-0.4*(claw.get_lift_position()-armTarget));
+                        } else {
+                            claw.move_lift(0);
                             stateEntryTime = pros::millis();
                             grabState = 3;
                         }
                         break;
                     case 3://Wait for bounce to not be bounce
-                        if(pros::millis() - stateEntryTime > 210) {
+                        if(pros::millis() - stateEntryTime > 50) {
                             stateEntryTime = pros::millis();
                             grabState = 4;
                         }
